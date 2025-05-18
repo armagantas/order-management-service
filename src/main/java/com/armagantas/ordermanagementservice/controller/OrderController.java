@@ -1,15 +1,29 @@
 package com.armagantas.ordermanagementservice.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.armagantas.ordermanagementservice.domain.models.CreateOrderRequest;
+import com.armagantas.ordermanagementservice.domain.models.CreateOrderResponse;
+import com.armagantas.ordermanagementservice.domain.services.OrderService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/order")
 public class OrderController {
 
-    @GetMapping("/hello")
-    public String helloWorld() {
-        return "Hello World";
+    private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    @PostMapping("/create/{productId}")
+    public ResponseEntity<CreateOrderResponse> createOrder(
+            @RequestBody CreateOrderRequest createOrderRequest,
+            @PathVariable String productId,
+            @RequestHeader("Authorization") String token) {
+        
+        createOrderRequest.setProductId(productId);
+        
+        return orderService.createOrder(createOrderRequest, token);
     }
 }
