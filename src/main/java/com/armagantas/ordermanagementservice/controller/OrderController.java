@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/order")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 public class OrderController {
 
     private final OrderService orderService;
@@ -19,7 +20,7 @@ public class OrderController {
     @PostMapping("/create/{productId}")
     public ResponseEntity<CreateOrderResponse> createOrder(
             @RequestBody CreateOrderRequest createOrderRequest,
-            @PathVariable String productId,
+            @PathVariable Long productId,
             @RequestHeader("Authorization") String token) {
         
         createOrderRequest.setProductId(productId);
