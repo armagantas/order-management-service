@@ -3,6 +3,7 @@ package com.armagantas.ordermanagementservice.domain.services;
 import com.armagantas.ordermanagementservice.application.clients.CustomerServiceClient;
 import com.armagantas.ordermanagementservice.application.clients.ProductServiceClient;
 import com.armagantas.ordermanagementservice.application.repository.OrderRepository;
+import com.armagantas.ordermanagementservice.common.messaging.OrderEventProducer;
 import com.armagantas.ordermanagementservice.domain.models.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +17,16 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CustomerServiceClient customerServiceClient;
     private final ProductServiceClient productServiceClient;
+    private final OrderEventProducer orderEventProducer;
 
     public OrderService(OrderRepository orderRepository,
                         CustomerServiceClient customerServiceClient,
-                        ProductServiceClient productServiceClient) {
+                        ProductServiceClient productServiceClient,
+                        OrderEventProducer orderEventProducer) {
         this.orderRepository = orderRepository;
         this.customerServiceClient = customerServiceClient;
         this.productServiceClient = productServiceClient;
+        this.orderEventProducer = orderEventProducer;
     }
 
     public ResponseEntity<CreateOrderResponse> createOrder(CreateOrderRequest request, String token) {
@@ -46,6 +50,8 @@ public class OrderService {
         order.setUpdatedAt(Instant.now());
 
         Order saved = orderRepository.save(order);
+
+        orderEventProducer.publishOrderCreatedEvent(saved);
 
         CreateOrderResponse response = new CreateOrderResponse(
                 saved.getId(),
